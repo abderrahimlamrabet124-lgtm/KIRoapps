@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anti-Confusion — Maîtrisez votre apprentissage</title>
+  <style>
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      --bg: #f0f4ff;
+      --primary: #6c63ff;
+      --primary-dark: #574fd6;
+      --success: #22c55e;
+      --error: #ef4444;
+      --partial: #f59e0b;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --card-bg: #ffffff;
+      --card-shadow: 0 4px 24px rgba(108, 99, 255, 0.10);
+      --radius: 16px;
+      --transition: 0.25s ease;
+    }
+
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    /* ===== FADE-IN ANIMATION ===== */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.92);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* ===== MAIN CONTAINER ===== */
+    .app {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    .header h1 {
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-size: 0.95rem;
+    }
+
+    /* ===== PROGRESS BAR ===== */
+    .progress-wrap {
+      margin-bottom: 24px;
+      animation: fadeIn 0.4s ease both;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .progress-bar-bg {
+      height: 8px;
+      background: #dde3f5;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--primary), #a78bfa);
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      padding: 32px 28px;
+      animation: fadeInUp 0.45s ease both;
+    }
+
+    /* ===== QUESTION ===== */
+    .question-number {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .question-text {
+      font-size: clamp(1rem, 3vw, 1.15rem);
+      font-weight: 700;
+      line-height: 1.5;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+
+    /* ===== ANSWER BUTTONS ===== */
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .choice-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: #f8faff;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 0.95rem;
+      color: var(--text);
+      font-family: inherit;
+      transition:
+        border-color var(--transition),
+        background var(--transition),
+        transform var(--transition),
+        box-shadow var(--transition);
+      line-height: 1.45;
+    }
+
+    .choice-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: #f0edff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(108, 99, 255, 0.15);
+    }
+
+    .choice-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .choice-btn:disabled {
+      cursor: default;
+    }
+
+    /* Letter badge */
+    .choice-letter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: #e2e8f0;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.8rem;
+      transition: background var(--transition), color var(--transition);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ===== ANSWER STATES ===== */
+    .choice-btn.correct {
+      border-color: var(--success);
+      background: #f0fdf4;
+    }
+    .choice-btn.correct .choice-letter {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .choice-btn.incorrect {
+      border-color: var(--error);
+      background: #fff5f5;
+    }
+    .choice-btn.incorrect .choice-letter {
+      background: var(--error);
+      color: #fff;
+    }
+
+    .choice-btn.partial {
+      border-color: var(--partial);
+      background: #fffbeb;
+    }
+    .choice-btn.partial .choice-letter {
+      background: var(--partial);
+      color: #fff;
+    }
+
+    /* ===== FEEDBACK BOX ===== */
+    .feedback {
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      animation: scaleIn 0.3s ease both;
+      display: none;
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback.correct {
+      background: #f0fdf4;
+      border-left: 4px solid var(--success);
+      color: #166534;
+    }
+
+    .feedback.incorrect {
+      background: #fff5f5;
+      border-left: 4px solid var(--error);
+      color: #991b1b;
+    }
+
+    .feedback.partial {
+      background: #fffbeb;
+      border-left: 4px solid var(--partial);
+      color: #92400e;
+    }
+
+    .feedback-label {
+      font-weight: 700;
+      margin-bottom: 4px;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== NEXT BUTTON ===== */
+    .next-btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition:
+        background var(--transition),
+        transform var(--transition),
+        box-shadow var(--transition);
+      display: none;
+      animation: fadeInUp 0.3s ease both;
+    }
+
+    .next-btn.show {
+      display: block;
+    }
+
+    .next-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(108, 99, 255, 0.30);
+    }
+
+    .next-btn:active {
+      transform: translateY(0);
+    }
+
+    /* ===== RESULTS SCREEN ===== */
+    .results {
+      text-align: center;
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    .results-icon {
+      font-size: 4rem;
+      margin-bottom: 12px;
+      animation: scaleIn 0.4s 0.1s ease both;
+      display: block;
+    }
+
+    .results-score {
+      font-size: clamp(2.5rem, 8vw, 3.5rem);
+      font-weight: 900;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .results-score-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .results-profile {
+      font-size: clamp(1.1rem, 4vw, 1.4rem);
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .results-message {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 420px;
+      margin: 0 auto 28px;
+    }
+
+    /* Score bar on results */
+    .score-visual {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .score-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      transition: transform 0.3s ease;
+    }
+
+    .score-dot.correct  { background: #dcfce7; color: var(--success); }
+    .score-dot.incorrect { background: #fee2e2; color: var(--error); }
+    .score-dot.partial  { background: #fef3c7; color: var(--partial); }
+
+    .restart-btn {
+      padding: 14px 36px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition:
+        background var(--transition),
+        transform var(--transition),
+        box-shadow var(--transition);
+    }
+
+    .restart-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(108, 99, 255, 0.30);
+    }
+
+    .restart-btn:active {
+      transform: translateY(0);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 480px) {
+      .card {
+        padding: 24px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Header -->
+  <div class="header">
+    <h1>🧠 Anti-Confusion</h1>
+    <p>Testez vos connaissances sur l'apprentissage efficace</p>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-meta">
+      <span id="progressLabel">Question 1 / 5</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- Quiz card -->
+  <div class="card" id="quizCard">
+    <div class="question-number" id="questionNumber">Question 1</div>
+    <div class="question-text" id="questionText"></div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback">
+      <div class="feedback-label" id="feedbackLabel"></div>
+      <div id="feedbackText"></div>
+    </div>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
+      Continuer →
+    </button>
+  </div>
+
+  <!-- Results card (hidden initially) -->
+  <div class="card results" id="resultsCard" style="display:none;">
+    <span class="results-icon" id="resultsIcon"></span>
+    <div class="results-score" id="resultsScore"></div>
+    <div class="results-score-label">bonnes réponses sur 5</div>
+    <div class="score-visual" id="scoreVisual"></div>
+    <div class="results-profile" id="resultsProfile"></div>
+    <div class="results-message" id="resultsMessage"></div>
+    <button class="restart-btn" onclick="restartQuiz()">🔄 Recommencer</button>
+  </div>
+</div>
+
+<script>
+  /* ===== QUIZ DATA ===== */
+  const questions = [
+    {
+      text: "Qu'est-ce que la mémorisation passive ?",
+      choices: [
+        { letter: "A", text: "Relire ses notes sans effort actif de rappel" },
+        { letter: "B", text: "Faire des exercices pratiques régulièrement" },
+        { letter: "C", text: "Expliquer un concept à quelqu'un d'autre" }
+      ],
+      correct: 0,       // index of correct answer
+      partial: null,    // index of partial answer (or null)
+      explanations: [
+        // explanation shown when each choice is selected
+        {
+          type: "correct",
+          label: "✅ Correct !",
+          text: "La mémorisation passive consiste à relire ou écouter sans tester activement sa mémoire. Elle donne une illusion de maîtrise mais est peu efficace."
+        },
+        {
+          type: "incorrect",
+          label: "❌ Pas tout à fait",
+          text: "Faire des exercices est une méthode active, bien plus efficace pour ancrer les connaissances."
+        },
+        {
+          type: "incorrect",
+          label: "❌ Pas tout à fait",
+          text: "Expliquer à autrui (méthode Feynman) est une technique d'apprentissage actif très puissante."
+        }
+      ]
+    },
+    {
+      text: "Quelle technique améliore le mieux la rétention à long terme ?",
+      choices: [
+        { letter: "A", text: "Relire le cours plusieurs fois" },
+        { letter: "B", text: "La répétition espacée (revoir à intervalles croissants)" },
+        { letter: "C", text: "Tout réviser la veille de l'examen" }
+      ],
+      correct: 1,
+      partial: null,
+      explanations: [
+        {
+          type: "incorrect",
+          label: "❌ Pas tout à fait",
+          text: "La relecture répétée crée une familiarité trompeuse sans vrai ancrage mémoriel."
+        },
+        {
+          type: "correct",
+          label: "✅ Correct !",
+          text: "La répétition espacée exploite la courbe de l'oubli d'Ebbinghaus. Revoir au bon moment consolide la mémoire à long terme."
+        },
+        {
+          type: "incorrect",
+          label: "❌ Pas tout à fait",
+          text: "Le bachotage produit une mémorisation à court terme qui s'efface rapidement après l'examen."
+        }
+      ]
+    },
+    {
+      text: "Qu'est-ce que l'illusion de savoir ?",
+      choices: [
+        { letter: "A", text: "Comprendre un concept après l'avoir lu sans pouvoir le réexpliquer" },
+        { letter: "B", text: "Maîtriser parfaitement un sujet après l'avoir étudié" },
+        { letter: "C", text: "Apprendre par cœur sans comprendre" }
+      ],
+      correct: 0,
+      partial: 2,       // index C is partial
+      explanations: [
+        {
+          type: "correct",
+          label: "✅ Correct !",
+          text: "L'illusion de savoir survient quand la familiarité avec un texte est confondue avec une vraie compréhension. Le test de rappel révèle la différence."
+        },
+        {
+          type: "incorrect",
+          label: "❌ Pas tout à fait",
+          text: "Si vous maîtrisez vraiment, vous pouvez expliquer, appliquer et transférer le concept — pas seulement le reconnaître."
+        },
+        {
+          type: "partial",
+          label: "🟡 Partiellement juste",
+          text: "Apprendre par cœur sans comprendre est un problème réel, mais l'illusion de savoir est plus subtile : on croit comprendre alors qu'on ne fait que reconnaître."
+        }
+      ]
+    },
+    {
+      text: "Quelle est la meilleure façon de vérifier sa compréhension ?",
+      choices: [
+        { letter: "A", text: "Se dire 'je comprends' après avoir lu" },
+        { letter: "B", text: "Fermer le livre et essayer de réécrire les idées clés" },
+        { letter: "C", text: "Surligner les passages importants" }
+      ],
+      correct: 1,
+      partial: null,
+      explanations: [
+        {
+          type: "incorrect",
+          label: "❌ Pas tout à fait",
+          text: "Le sentiment subjectif de compréhension est peu fiable. Seul un test objectif révèle ce qu'on sait vraiment."
+        },
+        {
+          type: "correct",
+          label: "✅ Correct !",
+          text: "Le rappel actif (active recall) force le cerveau à reconstruire l'information, renforçant les connexions neuronales bien plus que la relecture."
+        },
+        {
+          type: "incorrect",
+          label: "❌ Pas tout à fait",
+          text: "Le surlignage est une technique passive. Il donne l'impression de travailler sans réellement tester la mémoire."
+        }
+      ]
+    },
+    {
+      text: "Pourquoi l'apprentissage par erreur est-il efficace ?",
+      choices: [
+        { letter: "A", text: "Les erreurs découragent et motivent à mieux travailler" },
+        { letter: "B", text: "Le cerveau encode mieux les corrections après une tentative échouée" },
+        { letter: "C", text: "Les erreurs n'ont aucun impact sur l'apprentissage" }
+      ],
+      correct: 1,
+      partial: null,
+      explanations: [
+        {
+          type: "incorrect",
+          label: "❌ Pas tout à fait",
+          text: "La motivation peut jouer un rôle, mais l'effet principal est neurologique : l'erreur active des mécanismes de correction et d'encodage profond."
+        },
+        {
+          type: "correct",
+          label: "✅ Correct !",
+          text: "L'effet de génération montre que tenter de répondre avant de voir la solution, même en se trompant, améliore la rétention. L'erreur crée un signal d'apprentissage fort."
+        },
+        {
+          type: "incorrect",
+          label: "❌ Pas tout à fait",
+          text: "C'est faux. Les erreurs sont des opportunités d'apprentissage précieuses quand elles sont suivies d'une correction et d'une réflexion."
+        }
+      ]
+    }
+  ];
+
+  /* ===== SCORING PROFILES ===== */
+  const profiles = [
+    {
+      min: 5, max: 5,
+      icon: "🏆",
+      title: "Excellent Apprenant 🏆",
+      message: "Vous maîtrisez les stratégies d'apprentissage efficaces. Continuez à pratiquer le rappel actif et la répétition espacée !"
+    },
+    {
+      min: 4, max: 4,
+      icon: "📈",
+      title: "En Progression 📈",
+      message: "Vous avez de bonnes bases. Approfondissez la répétition espacée et testez-vous régulièrement plutôt que de relire."
+    },
+    {
+      min: 3, max: 3,
+      icon: "🌱",
+      title: "Apprenant Actif 🌱",
+      message: "Vous êtes sur la bonne voie ! Réduisez la relecture passive et adoptez davantage le rappel actif."
+    },
+    {
+      min: 0, max: 2,
+      icon: "💡",
+      title: "Apprenant Passif 💡",
+      message: "Pas de panique ! Découvrez les techniques d'apprentissage actif : rappel, espacement, méthode Feynman."
+    }
+  ];
+
+  /* ===== STATE ===== */
+  let currentQuestion = 0;
+  let score = 0;
+  let answers = []; // stores result type per question: 'correct' | 'incorrect' | 'partial'
+
+  /* ===== INIT ===== */
+  function init() {
+    currentQuestion = 0;
+    score = 0;
+    answers = [];
+    renderQuestion();
+    updateProgress();
+  }
+
+  /* ===== RENDER QUESTION ===== */
+  function renderQuestion() {
+    const q = questions[currentQuestion];
+
+    // Update question meta
+    document.getElementById("questionNumber").textContent = `Question ${currentQuestion + 1}`;
+    document.getElementById("questionText").textContent = q.text;
+
+    // Build choice buttons
+    const choicesEl = document.getElementById("choices");
+    choicesEl.innerHTML = "";
+    q.choices.forEach((choice, idx) => {
+      const btn = document.createElement("button");
+      btn.className = "choice-btn";
+      btn.innerHTML = `<span class="choice-letter">${choice.letter}</span><span>${choice.text}</span>`;
+      btn.onclick = () => selectAnswer(idx);
+      choicesEl.appendChild(btn);
+    });
+
+    // Reset feedback & next button
+    const feedback = document.getElementById("feedback");
+    feedback.className = "feedback";
+    feedback.style.display = "none";
+
+    const nextBtn = document.getElementById("nextBtn");
+    nextBtn.className = "next-btn";
+    nextBtn.textContent = currentQuestion < questions.length - 1 ? "Continuer →" : "Voir mes résultats →";
+
+    // Animate card in
+    const card = document.getElementById("quizCard");
+    card.style.animation = "none";
+    // Force reflow to restart animation
+    void card.offsetWidth;
+    card.style.animation = "fadeInUp 0.45s ease both";
+  }
+
+  /* ===== SELECT ANSWER ===== */
+  function selectAnswer(choiceIdx) {
+    const q = questions[currentQuestion];
+    const buttons = document.querySelectorAll(".choice-btn");
+
+    // Disable all buttons
+    buttons.forEach(btn => btn.disabled = true);
+
+    // Determine result type for selected choice
+    const explanation = q.explanations[choiceIdx];
+    const resultType = explanation.type; // 'correct' | 'incorrect' | 'partial'
+
+    // Track score
+    if (resultType === "correct") {
+      score++;
+      answers.push("correct");
+    } else if (resultType === "partial") {
+      answers.push("partial");
+    } else {
+      answers.push("incorrect");
+    }
+
+    // Style the selected button
+    buttons[choiceIdx].classList.add(resultType);
+
+    // If wrong, also highlight the correct answer
+    if (resultType !== "correct") {
+      buttons[q.correct].classList.add("correct");
+    }
+
+    // Show feedback
+    const feedback = document.getElementById("feedback");
+    feedback.className = `feedback ${resultType} show`;
+    feedback.style.display = "block";
+    document.getElementById("feedbackLabel").textContent = explanation.label;
+    document.getElementById("feedbackText").textContent = explanation.text;
+
+    // Show next button
+    const nextBtn = document.getElementById("nextBtn");
+    nextBtn.classList.add("show");
+  }
+
+  /* ===== NEXT QUESTION ===== */
+  function nextQuestion() {
+    currentQuestion++;
+    if (currentQuestion < questions.length) {
+      updateProgress();
+      renderQuestion();
+    } else {
+      showResults();
+    }
+  }
+
+  /* ===== UPDATE PROGRESS BAR ===== */
+  function updateProgress() {
+    const total = questions.length;
+    const pct = Math.round((currentQuestion / total) * 100);
+    document.getElementById("progressFill").style.width = pct + "%";
+    document.getElementById("progressLabel").textContent = `Question ${currentQuestion + 1} / ${total}`;
+    document.getElementById("progressPct").textContent = pct + "%";
+  }
+
+  /* ===== SHOW RESULTS ===== */
+  function showResults() {
+    // Hide quiz, show results
+    document.getElementById("quizCard").style.display = "none";
+    document.getElementById("progressWrap").style.display = "none";
+
+    const resultsCard = document.getElementById("resultsCard");
+    resultsCard.style.display = "block";
+
+    // Score display
+    document.getElementById("resultsScore").textContent = score;
+
+    // Score dots
+    const scoreVisual = document.getElementById("scoreVisual");
+    scoreVisual.innerHTML = "";
+    answers.forEach((type, i) => {
+      const dot = document.createElement("div");
+      dot.className = `score-dot ${type}`;
+      const icons = { correct: "✓", incorrect: "✗", partial: "~" };
+      dot.textContent = icons[type];
+      dot.title = `Q${i + 1}: ${type}`;
+      // Staggered animation
+      dot.style.animation = `scaleIn 0.3s ${0.1 + i * 0.08}s ease both`;
+      dot.style.opacity = "0";
+      scoreVisual.appendChild(dot);
+    });
+
+    // Profile
+    const profile = profiles.find(p => score >= p.min && score <= p.max);
+    document.getElementById("resultsIcon").textContent = profile.icon;
+    document.getElementById("resultsProfile").textContent = profile.title;
+    document.getElementById("resultsMessage").textContent = profile.message;
+  }
+
+  /* ===== RESTART ===== */
+  function restartQuiz() {
+    document.getElementById("resultsCard").style.display = "none";
+    document.getElementById("quizCard").style.display = "block";
+    document.getElementById("progressWrap").style.display = "block";
+    init();
+  }
+
+  /* ===== START ===== */
+  init();
+</script>
+</body>
+</html>
